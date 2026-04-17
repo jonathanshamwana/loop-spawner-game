@@ -254,6 +254,10 @@
   color: var(--purple);
 }
 
+.modal-title-bonus {
+  color: var(--orange);
+}
+
 .modal-close-btn {
   background: none;
   border: none;
