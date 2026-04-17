@@ -27,7 +27,7 @@
 
 .game-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 14px;
 }
 
@@ -35,10 +35,27 @@
   font-family: 'Space Mono', monospace;
   font-size: 20px;
   font-weight: 700;
-  color: var(--blue);
   letter-spacing: -0.5px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+
+.site-logo {
+  flex-shrink: 0;
+  display: block;
+}
+
+.headshot-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.title-loop  { color: var(--blue); }
+.title-ninja { color: var(--orange); }
 
 .game-subtitle {
   font-size: 12px;

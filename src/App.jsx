@@ -3,43 +3,71 @@ import GameCanvas from './components/GameCanvas'
 import CodeExplainer from './components/CodeExplainer'
 import './App.css'
 
+const TOTAL_WAVES = 10
+
+function HeadshotLogo() {
+  return (
+    <img
+      className="site-logo headshot-logo"
+      src="/images/jonathan-headhsot.jpeg"
+      alt="Jonathan"
+    />
+  )
+}
+
 export default function App() {
   const [score, setScore] = useState(0)
   const [alive, setAlive] = useState(0)
   const [wave, setWave] = useState(0)
   const [countdown, setCountdown] = useState(null)
   const [running, setRunning] = useState(false)
-  const [loopCount, setLoopCount] = useState(3)
-  const [loopIteration, setLoopIteration] = useState(null)
+  const [gameOver, setGameOver] = useState(false)
+
+  // Code explainer animation state
+  const [loopCount, setLoopCount] = useState(2)   // inner range(count)
+  const [loopIteration, setLoopIteration] = useState(null) // current i in inner loop
   const [isHighlighting, setIsHighlighting] = useState(false)
-  const [logs, setLogs] = useState(['— waiting to start —'])
+
   const gameRef = useRef(null)
   const animTimerRef = useRef(null)
 
-  const handleWaveSpawn = useCallback((waveNum, count) => {
+  // Derived values (no extra state needed)
+  const waveNum0 = wave > 0 ? wave - 1 : null  // 0-indexed wave_num for display
+  const currentSpeed = wave > 0
+    ? parseFloat((1.0 + (wave - 1) * 0.3).toFixed(1))
+    : 1.0
+
+  const handleWaveSpawn = useCallback((waveNum, count, speed) => {
     setWave(waveNum)
     setLoopCount(count)
     setIsHighlighting(true)
-    setLogs(prev =>
-      [`Wave ${waveNum}: range(${count}) → ${count} enemies spawned`, ...prev].slice(0, 8)
-    )
-
-    // Animate i=0, i=1, ... i=count-1 to show the loop running step-by-step
+    setLoopIteration(null) // outer phase first — no inner iteration yet
     clearTimeout(animTimerRef.current)
-    let i = 0
-    const step = () => {
-      setLoopIteration(i)
-      if (i < count - 1) {
-        i++
-        animTimerRef.current = setTimeout(step, 380)
-      } else {
-        animTimerRef.current = setTimeout(() => {
-          setLoopIteration(null)
-          setIsHighlighting(false)
-        }, 600)
+
+    // Phase 1: outer loop line highlighted (~420ms) before inner loop starts
+    animTimerRef.current = setTimeout(() => {
+      let i = 0
+      const step = () => {
+        setLoopIteration(i)
+        if (i < count - 1) {
+          i++
+          animTimerRef.current = setTimeout(step, 300)
+        } else {
+          animTimerRef.current = setTimeout(() => {
+            setLoopIteration(null)
+            setIsHighlighting(false)
+          }, 500)
+        }
       }
-    }
-    step()
+      step()
+    }, 420)
+  }, [])
+
+  const handleGameEnd = useCallback(() => {
+    setGameOver(true)
+    clearTimeout(animTimerRef.current)
+    setLoopIteration(null)
+    setIsHighlighting(false)
   }, [])
 
   const handleReset = useCallback(() => {
@@ -49,12 +77,20 @@ export default function App() {
     setWave(0)
     setCountdown(null)
     setRunning(false)
-    setLoopCount(3)
+    setGameOver(false)
+    setLoopCount(2)
     setLoopIteration(null)
     setIsHighlighting(false)
-    setLogs(['— waiting to start —'])
     gameRef.current?.reset()
   }, [])
+
+  // HUD "next wave" display
+  const nextWaveLabel = () => {
+    if (gameOver) return 'Done!'
+    if (wave === TOTAL_WAVES) return 'Final!'
+    if (countdown != null) return `${countdown}s`
+    return '—'
+  }
 
   return (
     <div className="app">
@@ -64,7 +100,10 @@ export default function App() {
         <div className="game-side">
           <div className="game-header">
             <h1 className="game-title">
-              <span className="kw">for</span> loop spawner
+              <HeadshotLogo />
+              <span className="title-loop">for loop</span>
+              {' '}
+              <span className="title-ninja">ninja</span>
             </h1>
             <p className="game-subtitle">Click enemies to zap them · +10 pts each</p>
           </div>
@@ -80,18 +119,20 @@ export default function App() {
             </div>
             <div className="stat">
               <div className="stat-label">Wave</div>
-              <div className="stat-value" style={{ color: 'var(--purple)' }}>{wave || '—'}</div>
+              <div className="stat-value" style={{ color: 'var(--purple)' }}>
+                {wave > 0 ? `${wave} / ${TOTAL_WAVES}` : '—'}
+              </div>
             </div>
             <div className="stat">
               <div className="stat-label">Next wave</div>
               <div className="stat-value" style={{ color: 'var(--green)' }}>
-                {countdown != null ? `${countdown}s` : '—'}
+                {nextWaveLabel()}
               </div>
             </div>
           </div>
 
           <div className="btn-row">
-            {!running && (
+            {!running && !gameOver && (
               <button className="btn-primary" onClick={() => gameRef.current?.start()}>
                 ▶ Start
               </button>
@@ -106,6 +147,7 @@ export default function App() {
             onAliveChange={setAlive}
             onCountdownChange={setCountdown}
             onRunningChange={setRunning}
+            onGameEnd={handleGameEnd}
           />
         </div>
 
@@ -115,9 +157,12 @@ export default function App() {
             isHighlighting={isHighlighting}
             loopCount={loopCount}
             loopIteration={loopIteration}
-            logs={logs}
+            waveNum0={waveNum0}
+            totalWaves={TOTAL_WAVES}
+            speed={currentSpeed}
             wave={wave}
             running={running}
+            gameOver={gameOver}
           />
         </div>
 

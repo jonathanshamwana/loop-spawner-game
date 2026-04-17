@@ -47,6 +47,21 @@
   box-shadow: 0 0 0 1px rgba(255, 235, 0, 0.25);
 }
 
+/* Live value annotations injected inline (e.g. "  # = 5") */
+.live-val {
+  color: #4a5568;
+  font-style: italic;
+  font-size: 11px;
+}
+
+.hi-line.active .live-val {
+  color: rgba(255, 224, 130, 0.6);
+}
+
+.done-text {
+  color: var(--green);
+}
+
 /* ── Loop tracker ── */
 
 .loop-tracker {
@@ -177,28 +192,4 @@
 
 .concept-card.active p {
   color: var(--text);
-}
-
-/* ── Wave log ── */
-
-.wave-log {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  max-height: 130px;
-  overflow-y: auto;
-}
-
-.log-entry {
-  font-family: 'Space Mono', monospace;
-  font-size: 10.5px;
-  color: var(--muted);
-  border-left: 2px solid var(--border);
-  padding-left: 8px;
-  transition: border-color 0.3s, color 0.3s;
-}
-
-.log-entry.new {
-  border-left-color: var(--green);
-  color: var(--green);
 }

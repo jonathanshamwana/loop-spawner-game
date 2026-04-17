@@ -14,3 +14,48 @@
   background: #07080f;
   cursor: crosshair;
 }
+
+/* ── Game-over overlay ── */
+
+.game-over-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: rgba(7, 8, 15, 0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.go-emoji {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.go-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.go-score {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.go-score span {
+  font-family: 'Space Mono', monospace;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.go-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}

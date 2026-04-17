@@ -1,52 +1,129 @@
 import './CodeExplainer.css'
 
-// ── Syntax-highlighted Python code ────────────────────────────
-function CodePanel({ isHighlighting, loopCount, loopIteration }) {
-  const loopActive = isHighlighting
-  const bodyActive = isHighlighting && loopIteration !== null
-  const callActive = isHighlighting
+// ── Nested-loop Python code panel ─────────────────────────────
+function CodePanel({ isHighlighting, loopCount, loopIteration, waveNum0, speed }) {
+  // Phase 1: outer for + count= + speed= lines glow (iteration is null)
+  const outerPhase = isHighlighting && loopIteration === null
+  // Phase 2: inner for + append lines glow (iteration is a number)
+  const innerPhase = isHighlighting && loopIteration !== null
 
   return (
     <div className="panel">
       <div className="panel-title">Python code — running live</div>
       <pre className="code-block">
-        <span className="kw">def</span> <span className="fn">spawn_wave</span>{'(wave_num):\n'}
-        {'  enemies = []\n'}
-        {'  '}
-        <span className={`hi-line${loopActive ? ' active' : ''}`}>
-          <span className="kw">for</span>{' i '}
-          <span className="kw">in</span>{' '}
+        <span className="cm">{'# Outer loop — one iteration per wave\n'}</span>
+        <span className={`hi-line${outerPhase ? ' active' : ''}`}>
+          <span className="kw">for</span>
+          {' wave_num '}
+          <span className="kw">in</span>
+          {' '}
           <span className="fn">range</span>
           {'('}
-          <span className="num">{loopCount}</span>
+          <span className="num">10</span>
           {'):'}
         </span>
         {'\n'}
-        {'    x = '}<span className="fn">random</span>{'(SCREEN_W)\n'}
-        {'    e = '}<span className="fn">Enemy</span>{'(x, speed=wave_num)\n'}
         {'    '}
-        <span className={`hi-line${bodyActive ? ' active' : ''}`}>
+        <span className={`hi-line${outerPhase ? ' active' : ''}`}>
+          {'count = wave_num + '}
+          <span className="num">2</span>
+          {waveNum0 !== null
+            ? <span className="live-val">{'  # = '}{loopCount}</span>
+            : null}
+        </span>
+        {'\n'}
+        {'    '}
+        <span className={`hi-line${outerPhase ? ' active' : ''}`}>
+          {'speed = '}
+          <span className="num">{'1.0'}</span>
+          {' + wave_num * '}
+          <span className="num">{'0.3'}</span>
+          {waveNum0 !== null
+            ? <span className="live-val">{'  # = '}{speed}</span>
+            : null}
+        </span>
+        {'\n\n'}
+        {'    '}
+        <span className="cm">{'# Inner loop — spawn each enemy\n'}</span>
+        {'    '}
+        <span className={`hi-line${innerPhase ? ' active' : ''}`}>
+          <span className="kw">for</span>
+          {' i '}
+          <span className="kw">in</span>
+          {' '}
+          <span className="fn">range</span>
+          {'(count):'}
+        </span>
+        {'\n'}
+        {'        '}
+        {'e = '}
+        <span className="fn">Enemy</span>
+        {'(speed=speed)\n'}
+        {'        '}
+        <span className={`hi-line${innerPhase ? ' active' : ''}`}>
           {'enemies.'}
           <span className="fn">append</span>
           {'(e)'}
         </span>
-        {'\n'}
+        {'\n\n'}
+        {'    '}
+        <span className="fn">wait</span>
+        {'('}
+        <span className="num">4</span>
+        {')'}
         {'  '}
-        <span className="kw">return</span>
-        {' enemies\n\n'}
-        <span className="cm">{'# called every 4 seconds:\n'}</span>
-        <span className={`hi-line${callActive ? ' active' : ''}`}>
-          {'all_enemies = '}
-          <span className="fn">spawn_wave</span>
-          {'(wave_num)'}
-        </span>
+        <span className="cm">{'# seconds between waves'}</span>
       </pre>
     </div>
   )
 }
 
-// ── Loop step visualiser ───────────────────────────────────────
-function LoopVisualiser({ loopCount, loopIteration, wave }) {
+// ── Outer loop tracker — 10 wave boxes ────────────────────────
+function OuterLoopTracker({ waveNum0, totalWaves, isHighlighting, gameOver }) {
+  if (waveNum0 === null && !gameOver) return null
+
+  const current = waveNum0 ?? totalWaves  // after game over, all are done
+
+  return (
+    <div className="panel">
+      <div className="panel-title">Outer loop tracker — wave_num in range(10)</div>
+      <div className="loop-tracker">
+        <div className="loop-i-label">
+          <span className="kw">wave_num</span>
+          {' = '}
+          {gameOver
+            ? <span className="done-text">✓ all done</span>
+            : <span className="num">{waveNum0}</span>
+          }
+          {!gameOver && waveNum0 !== null && (
+            <span className="muted"> &nbsp;(wave {waveNum0 + 1} of {totalWaves})</span>
+          )}
+        </div>
+
+        <div className="loop-boxes">
+          {Array.from({ length: totalWaves }, (_, i) => {
+            let cls = 'loop-box'
+            if (gameOver)                                      cls += ' all-done'
+            else if (i < current)                             cls += ' done'
+            else if (i === current && isHighlighting)         cls += ' current'
+            else if (i === current)                           cls += ' done'
+            return (
+              <div key={i} className={cls} title={`wave_num = ${i}`}>
+                {i}
+              </div>
+            )
+          })}
+        </div>
+        <div className="loop-caption">
+          Each box = one wave. The lit box is the current <code>wave_num</code>.
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Inner loop tracker — count enemy boxes ────────────────────
+function InnerLoopTracker({ loopCount, loopIteration, wave, waveNum0 }) {
   if (wave === 0) return null
 
   const isDone = loopIteration === null
@@ -54,14 +131,16 @@ function LoopVisualiser({ loopCount, loopIteration, wave }) {
 
   return (
     <div className="panel">
-      <div className="panel-title">Loop tracker — what is i right now?</div>
+      <div className="panel-title">Inner loop tracker — i in range(count)</div>
       <div className="loop-tracker">
         <div className="loop-i-label">
           <span className="kw">i</span>
           {' = '}
           <span className="num">{isDone ? '✓ done' : loopIteration}</span>
           {!isDone && (
-            <span className="muted"> &nbsp;(step {(loopIteration ?? 0) + 1} of {loopCount})</span>
+            <span className="muted">
+              {' '}&nbsp;(enemy {(loopIteration ?? 0) + 1} of {loopCount})
+            </span>
           )}
         </div>
 
@@ -71,9 +150,9 @@ function LoopVisualiser({ loopCount, loopIteration, wave }) {
               key={i}
               className={[
                 'loop-box',
-                !isDone && i < currentI  ? 'done'    : '',
-                !isDone && i === currentI ? 'current' : '',
-                isDone                   ? 'all-done' : '',
+                !isDone && i < currentI   ? 'done'     : '',
+                !isDone && i === currentI ? 'current'  : '',
+                isDone                    ? 'all-done' : '',
               ].join(' ').trim()}
               title={`i = ${i}`}
             >
@@ -81,96 +160,57 @@ function LoopVisualiser({ loopCount, loopIteration, wave }) {
             </div>
           ))}
         </div>
-
         <div className="loop-caption">
-          Each box = one iteration of the loop. The highlighted box is the current value of <code>i</code>.
+          Each box = one enemy spawned. Wave {wave ?? 1} spawns{' '}
+          <strong style={{ color: 'var(--text)' }}>{loopCount} enemies</strong> — because{' '}
+          <code>wave_num({waveNum0 ?? 0}) + 2 = {loopCount}</code>.
         </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Concept cards ─────────────────────────────────────────────
-function ConceptCards({ isHighlighting, loopIteration, loopCount, wave }) {
-  const loopActive  = isHighlighting
-  const bodyActive  = isHighlighting && loopIteration !== null
-  const callActive  = isHighlighting
-
-  return (
-    <div className="panel">
-      <div className="panel-title">What each part does</div>
-      <div className="concepts">
-
-        <div className={`concept-card${loopActive ? ' active' : ''}`}>
-          <div className="concept-tag">for loop</div>
-          <h4><code>for i in range({loopCount}):</code></h4>
-          <p>
-            Runs the indented code <strong>{loopCount} times</strong>. The variable <code>i</code> starts at <strong>0</strong> and counts up to <strong>{loopCount - 1}</strong>. Think of it like a counter!
-          </p>
-        </div>
-
-        <div className={`concept-card${bodyActive ? ' active' : ''}`}>
-          <div className="concept-tag">loop body</div>
-          <h4><code>enemies.append(e)</code></h4>
-          <p>
-            This line runs <strong>inside</strong> the loop, so it happens once per iteration. Each time through, it adds one enemy to the <code>enemies</code> list.
-          </p>
-        </div>
-
-        <div className={`concept-card${callActive ? ' active' : ''}`}>
-          <div className="concept-tag">function call</div>
-          <h4><code>spawn_wave(wave_num)</code></h4>
-          <p>
-            Wave number goes up each round, so <code>range(n)</code> gets a bigger <code>n</code> — meaning <strong>more enemies every wave!</strong>
-            {wave > 0 && <> Currently wave <strong>{wave}</strong>, so n = <strong>{loopCount}</strong>.</>}
-          </p>
-        </div>
-
-      </div>
-    </div>
-  )
-}
-
-// ── Wave log ─────────────────────────────────────────────────
-function WaveLog({ logs }) {
-  return (
-    <div className="panel">
-      <div className="panel-title">Wave log</div>
-      <div className="wave-log">
-        {logs.map((entry, i) => (
-          <div
-            key={entry + i}
-            className={`log-entry${i === 0 && entry !== '— waiting to start —' ? ' new' : ''}`}
-          >
-            {entry}
-          </div>
-        ))}
       </div>
     </div>
   )
 }
 
 // ── Main export ───────────────────────────────────────────────
-export default function CodeExplainer({ isHighlighting, loopCount, loopIteration, logs, wave, running }) {
+export default function CodeExplainer({
+  isHighlighting, loopCount, loopIteration,
+  waveNum0, totalWaves, speed,
+  wave, running, gameOver,
+}) {
+  const subtitle = gameOver
+    ? 'All 10 waves complete — the outer loop finished!'
+    : running
+      ? 'Watch both loops light up as each wave spawns!'
+      : 'Press ▶ Start to see the nested loops in action'
+
   return (
     <div className="code-explainer">
       <div className="explainer-header">
         <h2 className="explainer-title">Code Explainer</h2>
-        <p className="explainer-subtitle">
-          {running
-            ? 'Watch the code light up as each wave spawns!'
-            : 'Press ▶ Start to see the for loop in action'}
-        </p>
+        <p className="explainer-subtitle">{subtitle}</p>
       </div>
-      <CodePanel isHighlighting={isHighlighting} loopCount={loopCount} loopIteration={loopIteration} />
-      <LoopVisualiser loopCount={loopCount} loopIteration={loopIteration} wave={wave} />
-      <ConceptCards
+
+      <CodePanel
         isHighlighting={isHighlighting}
-        loopIteration={loopIteration}
         loopCount={loopCount}
-        wave={wave}
+        loopIteration={loopIteration}
+        waveNum0={waveNum0}
+        speed={speed}
       />
-      <WaveLog logs={logs} />
+
+      <OuterLoopTracker
+        waveNum0={waveNum0}
+        totalWaves={totalWaves}
+        isHighlighting={isHighlighting}
+        gameOver={gameOver}
+      />
+
+      <InnerLoopTracker
+        loopCount={loopCount}
+        loopIteration={loopIteration}
+        wave={wave}
+        waveNum0={waveNum0}
+      />
+
     </div>
   )
 }
