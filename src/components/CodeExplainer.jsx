@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './CodeExplainer.css'
 
 // ── Nested-loop Python code panel ─────────────────────────────
@@ -170,12 +171,116 @@ function InnerLoopTracker({ loopCount, loopIteration, wave, waveNum0 }) {
   )
 }
 
+// ── Explanation modal ─────────────────────────────────────────
+const EXPLAIN_STEPS = [
+  {
+    highlight: 'for-kw',
+    label: 'For loops',
+    tip: 'A for loop repeats a block of code a fixed number of times — here it runs once per wave.',
+  },
+  {
+    highlight: 'iterator',
+    label: 'The iterator',
+    tip: 'wave_num is the iterator: a variable that automatically counts up (0, 1, 2…) each time the loop repeats.',
+  },
+  {
+    highlight: 'range',
+    label: 'Range & termination',
+    tip: 'range(10) sets when the loop stops — without it the loop would repeat forever.',
+  },
+  {
+    highlight: 'body',
+    label: 'The body',
+    tip: 'Everything indented under the for line is the body — it runs once for every value of wave_num.',
+  },
+  {
+    highlight: 'inner-for',
+    label: 'Nested loops',
+    tip: 'A loop inside a loop is nesting — the inner loop runs completely for every single outer iteration.',
+    bonus: true,
+  },
+]
+
+function ExplainModal({ onClose }) {
+  const [step, setStep] = useState(0)
+  const { highlight, label, tip, bonus } = EXPLAIN_STEPS[step]
+  const hi = (id) => `mhi${highlight === id ? ' mhi-on' : ''}`
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-card" onClick={e => e.stopPropagation()}>
+
+        <div className="modal-hdr">
+          <span className="modal-title">How for loops work</span>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        <pre className="modal-code">
+          <span className="cm">{'# Outer loop — one iteration per wave\n'}</span>
+          <span className={hi('for-kw')}><span className="kw">for</span></span>
+          {' '}
+          <span className={hi('iterator')}>wave_num</span>
+          {' '}<span className="kw">in</span>{' '}
+          <span className={hi('range')}><span className="fn">range</span>{'('}<span className="num">10</span>{')'}</span>
+          {':'}
+          <span className={hi('body')}>
+            {'\n    '}{'count = wave_num + '}<span className="num">2</span>
+            {'\n    '}{'speed = '}<span className="num">1.0</span>{' + wave_num * '}<span className="num">0.3</span>
+            {'\n\n    '}<span className="cm">{'# Inner loop — spawn each enemy'}</span>
+            {'\n    '}
+            <span className={hi('inner-for')}>
+              <span className="kw">for</span>{' i '}
+              <span className="kw">in</span>{' '}
+              <span className="fn">range</span>{'(count):'}
+            </span>
+            {'\n        '}{'e = '}<span className="fn">Enemy</span>{'(speed=speed)'}
+            {'\n        '}{'enemies.'}<span className="fn">append</span>{'(e)'}
+          </span>
+          {'\n\n    '}
+          <span className="fn">wait</span>{'('}<span className="num">4</span>{')  '}
+          <span className="cm">{'# seconds between waves'}</span>
+        </pre>
+
+        <div className={`modal-tip${bonus ? ' modal-tip-bonus' : ''}`}>
+          <div className="modal-tip-label">{label}</div>
+          <p className="modal-tip-text">{tip}</p>
+        </div>
+
+        <div className="modal-nav">
+          <div className="modal-dots">
+            {EXPLAIN_STEPS.map((s, i) => (
+              <button
+                key={i}
+                className={`modal-dot${i === step ? ' on' : ''}${s.bonus ? ' bonus' : ''}`}
+                onClick={() => setStep(i)}
+                aria-label={`Step ${i + 1}`}
+              />
+            ))}
+          </div>
+          <div className="modal-nav-btns">
+            {step > 0 && (
+              <button className="modal-btn secondary" onClick={() => setStep(s => s - 1)}>← Back</button>
+            )}
+            {step < EXPLAIN_STEPS.length - 1
+              ? <button className="modal-btn" onClick={() => setStep(s => s + 1)}>Next →</button>
+              : <button className="modal-btn" onClick={onClose}>Done ✓</button>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
 // ── Main export ───────────────────────────────────────────────
 export default function CodeExplainer({
   isHighlighting, loopCount, loopIteration,
   waveNum0, totalWaves, speed,
   wave, running, gameOver,
 }) {
+  const [modalOpen, setModalOpen] = useState(false)
+
   const subtitle = gameOver
     ? 'All 10 waves complete — the outer loop finished!'
     : running
@@ -210,6 +315,12 @@ export default function CodeExplainer({
         wave={wave}
         waveNum0={waveNum0}
       />
+
+      <button className="explain-btn" onClick={() => setModalOpen(true)}>
+        Begin Explanation
+      </button>
+
+      {modalOpen && <ExplainModal onClose={() => setModalOpen(false)} />}
 
     </div>
   )
