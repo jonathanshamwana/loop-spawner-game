@@ -1,0 +1,204 @@
+.code-explainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+/* ── Header ── */
+
+.explainer-header {
+  flex-shrink: 0;
+}
+
+.explainer-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--purple);
+  margin-bottom: 2px;
+}
+
+.explainer-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── Code block ── */
+
+.code-block {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  line-height: 2;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.hi-line {
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin: 0 -4px;
+  transition: background 0.25s, color 0.25s;
+}
+
+.hi-line.active {
+  background: rgba(255, 235, 0, 0.18);
+  color: #ffe082;
+  box-shadow: 0 0 0 1px rgba(255, 235, 0, 0.25);
+}
+
+/* ── Loop tracker ── */
+
+.loop-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loop-i-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.loop-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.loop-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+}
+
+.loop-box.done {
+  background: rgba(195, 232, 141, 0.15);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.loop-box.current {
+  background: rgba(255, 235, 0, 0.2);
+  border-color: #ffe082;
+  color: #ffe082;
+  transform: scale(1.18);
+  box-shadow: 0 0 10px rgba(255, 235, 0, 0.3);
+}
+
+.loop-box.all-done {
+  background: rgba(195, 232, 141, 0.12);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.loop-caption {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.loop-caption code {
+  font-family: 'Space Mono', monospace;
+  color: var(--orange);
+  font-size: 10px;
+}
+
+/* ── Concept cards ── */
+
+.concepts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.concept-card {
+  border-left: 2px solid var(--border);
+  padding-left: 12px;
+  transition: border-color 0.3s;
+}
+
+.concept-card.active {
+  border-left-color: var(--purple);
+}
+
+.concept-tag {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+.concept-card.active .concept-tag {
+  color: var(--purple);
+}
+
+.concept-card h4 {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+
+.concept-card h4 code {
+  font-family: inherit;
+}
+
+.concept-card p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.55;
+  transition: color 0.3s;
+}
+
+.concept-card p code {
+  font-family: 'Space Mono', monospace;
+  font-size: 10.5px;
+  color: var(--orange);
+}
+
+.concept-card p strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.concept-card.active p {
+  color: var(--text);
+}
+
+/* ── Wave log ── */
+
+.wave-log {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  font-family: 'Space Mono', monospace;
+  font-size: 10.5px;
+  color: var(--muted);
+  border-left: 2px solid var(--border);
+  padding-left: 8px;
+  transition: border-color 0.3s, color 0.3s;
+}
+
+.log-entry.new {
+  border-left-color: var(--green);
+  color: var(--green);
+}
